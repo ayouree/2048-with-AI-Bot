@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>2048 Modern + Auto Bot AI</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand">
+        <h1 class="logo">2048</h1>
+        <span class="subtitle">AI Edition</span>
+      </div>
+
+      <div class="scores-container">
+        <div class="score-card">
+          <span class="score-label">SKOR</span>
+          <span id="current-score" class="score-value">0</span>
+          <span id="score-addition" class="score-addition"></span>
+        </div>
+        <div class="score-card best">
+          <span class="score-label">TERBAIK</span>
+          <span id="best-score" class="score-value">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation / Top Controls -->
+    <div class="controls-bar">
+      <p class="game-intro">
+        Gunakan <strong>WASD</strong> atau <strong>Tombol Panah</strong>. Aktifkan <strong>Auto Bot</strong> untuk melihat AI bermain otomatis!
+      </p>
+      <div class="btn-group">
+        <button id="btn-sound" class="btn btn-secondary btn-icon" title="Toggle Suara">
+          <span id="sound-icon">🔊</span>
+        </button>
+        <button id="btn-undo" class="btn btn-secondary" title="Kembalikan langkah sebelumnya">
+          <span>⤺ Undo</span>
+        </button>
+        <button id="btn-restart" class="btn btn-primary" title="Mulai game baru">
+          <span>Game Baru</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Game Section -->
+    <div class="game-workspace">
+      <!-- Game Board Container -->
+      <div class="game-wrapper">
+        <div class="grid-container" id="grid-container">
+          <!-- 16 Background Cells -->
+          <div class="grid-row">
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+          </div>
+          <div class="grid-row">
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+          </div>
+          <div class="grid-row">
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+          </div>
+          <div class="grid-row">
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+            <div class="grid-cell"></div>
+          </div>
+
+          <!-- Dynamic Tiles Container -->
+          <div class="tile-container" id="tile-container"></div>
+
+          <!-- Game Over / Win Overlay -->
+          <div class="game-message" id="game-message">
+            <div class="message-content">
+              <h2 id="message-title">Game Over!</h2>
+              <p id="message-subtitle">Tidak ada langkah tersisa.</p>
+              <div class="message-buttons">
+                <button id="btn-keep-going" class="btn btn-secondary">Lanjutkan Main</button>
+                <button id="btn-try-again" class="btn btn-primary">Coba Lagi</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Virtual Directional Pad for Mobile / Visual Feedback -->
+        <div class="mobile-dpad">
+          <button class="dpad-btn up" data-dir="0">▲</button>
+          <div class="dpad-middle">
+            <button class="dpad-btn left" data-dir="3">◀</button>
+            <div class="dpad-center"></div>
+            <button class="dpad-btn right" data-dir="1">▶</button>
+          </div>
+          <button class="dpad-btn down" data-dir="2">▼</button>
+        </div>
+      </div>
+
+      <!-- Auto Bot Panel -->
+      <aside class="bot-panel">
+        <div class="panel-header">
+          <div class="bot-status-badge">
+            <span class="status-dot" id="bot-status-dot"></span>
+            <span id="bot-status-text">Bot Siap</span>
+          </div>
+          <h3>🤖 AI Auto Bot</h3>
+        </div>
+
+        <div class="panel-body">
+          <div class="bot-controls">
+            <button id="btn-toggle-bot" class="btn btn-bot btn-block">
+              <span id="bot-btn-icon">▶</span>
+              <span id="bot-btn-text">Jalankan Auto Bot</span>
+            </button>
+            <button id="btn-step-bot" class="btn btn-secondary btn-block">
+              <span>⏭ Satu Langkah Bot</span>
+            </button>
+          </div>
+
+          <div class="bot-settings">
+            <div class="setting-item">
+              <div class="setting-header">
+                <label for="bot-speed">Kecepatan Bot</label>
+                <span id="speed-display" class="setting-value">Cepat (80ms)</span>
+              </div>
+              <input type="range" id="bot-speed" min="10" max="600" step="10" value="80">
+              <div class="range-labels">
+                <span>Kilat (10ms)</span>
+                <span>Santai (600ms)</span>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <label for="ai-mode">Strategi Algoritma</label>
+              <select id="ai-mode" class="select-input">
+                <option value="expectimax" selected>Expectimax AI (Paling Pintar - Rekomendasi)</option>
+                <option value="corner">Corner Priority Heuristic (Cepat)</option>
+                <option value="random">Random Move (Uji Coba Acak)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Bot Live Analytics -->
+          <div class="bot-stats">
+            <h4>Analitik Live AI</h4>
+            <div class="stats-grid">
+              <div class="stat-box">
+                <span class="stat-label">Langkah Bot</span>
+                <span class="stat-value" id="stat-moves">0</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Tile Terbesar</span>
+                <span class="stat-value highlight" id="stat-max-tile">2</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Langkah Terpilih</span>
+                <span class="stat-value" id="stat-next-move">-</span>
+              </div>
+              <div class="stat-box">
+                <span class="stat-label">Waktu Pikir</span>
+                <span class="stat-value" id="stat-eval-time">0 ms</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bot-tips">
+            <p>💡 <strong>Info:</strong> Algoritma Expectimax menggunakan pembobotan heuristik <em>Monotonicity</em>, <em>Smoothness</em>, <em>Empty Cells</em>, dan <em>Corner Locking</em> untuk mengincar 2048 atau lebih!</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Web Game 2048 + Auto Bot Solver | Kontrol: <strong>W/A/S/D</strong> atau <strong>Arrow Keys</strong></p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script src="game.js"></script>
+  <script src="ai.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
