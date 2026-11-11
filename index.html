@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>2048 Modern + Auto Bot AI</title>
+  <title>2048 Modern + Auto Bot AI & Leaderboard</title>
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,18 +15,30 @@
     <header class="header">
       <div class="brand">
         <h1 class="logo">2048</h1>
-        <span class="subtitle">AI Edition</span>
+        <span class="subtitle">AI & Leaderboard</span>
       </div>
 
-      <div class="scores-container">
-        <div class="score-card">
-          <span class="score-label">SKOR</span>
-          <span id="current-score" class="score-value">0</span>
-          <span id="score-addition" class="score-addition"></span>
+      <div class="header-right">
+        <!-- Player Info Badge -->
+        <div class="player-badge" id="player-badge" title="Klik untuk mengganti nama pemain">
+          <span class="player-avatar">👤</span>
+          <div class="player-details">
+            <span class="player-label">PEMAIN</span>
+            <span class="player-name" id="player-name-display">Pemain</span>
+          </div>
+          <button id="btn-edit-player" class="player-edit-btn" title="Ganti Nama">✏️</button>
         </div>
-        <div class="score-card best">
-          <span class="score-label">TERBAIK</span>
-          <span id="best-score" class="score-value">0</span>
+
+        <div class="scores-container">
+          <div class="score-card">
+            <span class="score-label">SKOR</span>
+            <span id="current-score" class="score-value">0</span>
+            <span id="score-addition" class="score-addition"></span>
+          </div>
+          <div class="score-card best">
+            <span class="score-label">TERBAIK</span>
+            <span id="best-score" class="score-value">0</span>
+          </div>
         </div>
       </div>
     </header>
@@ -34,9 +46,12 @@
     <!-- Navigation / Top Controls -->
     <div class="controls-bar">
       <p class="game-intro">
-        Gunakan <strong>WASD</strong> atau <strong>Tombol Panah</strong>. Aktifkan <strong>Auto Bot</strong> untuk melihat AI bermain otomatis!
+        Gunakan <strong>WASD</strong> atau <strong>Tombol Panah</strong>. Raih skor tertinggi dan catat namamu di <strong>Leaderboard</strong>!
       </p>
       <div class="btn-group">
+        <button id="btn-open-leaderboard" class="btn btn-secondary btn-icon-text" title="Lihat Papan Peringkat">
+          <span>🏆 Leaderboard</span>
+        </button>
         <button id="btn-sound" class="btn btn-secondary btn-icon" title="Toggle Suara">
           <span id="sound-icon">🔊</span>
         </button>
@@ -88,8 +103,27 @@
             <div class="message-content">
               <h2 id="message-title">Game Over!</h2>
               <p id="message-subtitle">Tidak ada langkah tersisa.</p>
+              
+              <!-- Game Over Score Summary -->
+              <div class="game-over-summary" id="game-over-summary">
+                <div class="summary-item">
+                  <span class="summary-label">Pemain</span>
+                  <span class="summary-val" id="summary-player">-</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Skor Akhir</span>
+                  <span class="summary-val highlight" id="summary-score">0</span>
+                </div>
+                <div class="summary-item">
+                  <span class="summary-label">Tile Terbesar</span>
+                  <span class="summary-val" id="summary-tile">0</span>
+                </div>
+              </div>
+              <div class="rank-notification" id="rank-notification"></div>
+
               <div class="message-buttons">
-                <button id="btn-keep-going" class="btn btn-secondary">Lanjutkan Main</button>
+                <button id="btn-modal-leaderboard" class="btn btn-secondary">🏆 Leaderboard</button>
+                <button id="btn-keep-going" class="btn btn-secondary">Lanjutkan</button>
                 <button id="btn-try-again" class="btn btn-primary">Coba Lagi</button>
               </div>
             </div>
@@ -108,83 +142,176 @@
         </div>
       </div>
 
-      <!-- Auto Bot Panel -->
-      <aside class="bot-panel">
-        <div class="panel-header">
-          <div class="bot-status-badge">
-            <span class="status-dot" id="bot-status-dot"></span>
-            <span id="bot-status-text">Bot Siap</span>
-          </div>
-          <h3>🤖 AI Auto Bot</h3>
+      <!-- Side Panel: AI Bot & Leaderboard Tabs -->
+      <aside class="bot-panel side-panel">
+        <div class="panel-tabs">
+          <button id="tab-btn-bot" class="panel-tab-btn active" data-tab="tab-bot-content">
+            🤖 Auto Bot
+          </button>
+          <button id="tab-btn-leaderboard" class="panel-tab-btn" data-tab="tab-leaderboard-content">
+            🏆 Leaderboard
+          </button>
         </div>
 
-        <div class="panel-body">
-          <div class="bot-controls">
-            <button id="btn-toggle-bot" class="btn btn-bot btn-block">
-              <span id="bot-btn-icon">▶</span>
-              <span id="bot-btn-text">Jalankan Auto Bot</span>
-            </button>
-            <button id="btn-step-bot" class="btn btn-secondary btn-block">
-              <span>⏭ Satu Langkah Bot</span>
-            </button>
+        <!-- Tab 1: AI Auto Bot -->
+        <div id="tab-bot-content" class="tab-pane active">
+          <div class="panel-header">
+            <div class="bot-status-badge">
+              <span class="status-dot" id="bot-status-dot"></span>
+              <span id="bot-status-text">Bot Siap</span>
+            </div>
+            <h3>🤖 AI Auto Bot</h3>
           </div>
 
-          <div class="bot-settings">
-            <div class="setting-item">
-              <div class="setting-header">
-                <label for="bot-speed">Kecepatan Bot</label>
-                <span id="speed-display" class="setting-value">Cepat (80ms)</span>
+          <div class="panel-body">
+            <div class="bot-controls">
+              <button id="btn-toggle-bot" class="btn btn-bot btn-block">
+                <span id="bot-btn-icon">▶</span>
+                <span id="bot-btn-text">Jalankan Auto Bot</span>
+              </button>
+              <button id="btn-step-bot" class="btn btn-secondary btn-block">
+                <span>⏭ Satu Langkah Bot</span>
+              </button>
+            </div>
+
+            <div class="bot-settings">
+              <div class="setting-item">
+                <div class="setting-header">
+                  <label for="bot-speed">Kecepatan Bot</label>
+                  <span id="speed-display" class="setting-value">Cepat (80ms)</span>
+                </div>
+                <input type="range" id="bot-speed" min="10" max="600" step="10" value="80">
+                <div class="range-labels">
+                  <span>Kilat (10ms)</span>
+                  <span>Santai (600ms)</span>
+                </div>
               </div>
-              <input type="range" id="bot-speed" min="10" max="600" step="10" value="80">
-              <div class="range-labels">
-                <span>Kilat (10ms)</span>
-                <span>Santai (600ms)</span>
+
+              <div class="setting-item">
+                <label for="ai-mode">Strategi Algoritma</label>
+                <select id="ai-mode" class="select-input">
+                  <option value="expectimax" selected>Expectimax AI (Paling Pintar - Rekomendasi)</option>
+                  <option value="corner">Corner Priority Heuristic (Cepat)</option>
+                  <option value="random">Random Move (Uji Coba Acak)</option>
+                </select>
               </div>
             </div>
 
-            <div class="setting-item">
-              <label for="ai-mode">Strategi Algoritma</label>
-              <select id="ai-mode" class="select-input">
-                <option value="expectimax" selected>Expectimax AI (Paling Pintar - Rekomendasi)</option>
-                <option value="corner">Corner Priority Heuristic (Cepat)</option>
-                <option value="random">Random Move (Uji Coba Acak)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Bot Live Analytics -->
-          <div class="bot-stats">
-            <h4>Analitik Live AI</h4>
-            <div class="stats-grid">
-              <div class="stat-box">
-                <span class="stat-label">Langkah Bot</span>
-                <span class="stat-value" id="stat-moves">0</span>
-              </div>
-              <div class="stat-box">
-                <span class="stat-label">Tile Terbesar</span>
-                <span class="stat-value highlight" id="stat-max-tile">2</span>
-              </div>
-              <div class="stat-box">
-                <span class="stat-label">Langkah Terpilih</span>
-                <span class="stat-value" id="stat-next-move">-</span>
-              </div>
-              <div class="stat-box">
-                <span class="stat-label">Waktu Pikir</span>
-                <span class="stat-value" id="stat-eval-time">0 ms</span>
+            <!-- Bot Live Analytics -->
+            <div class="bot-stats">
+              <h4>Analitik Live AI</h4>
+              <div class="stats-grid">
+                <div class="stat-box">
+                  <span class="stat-label">Langkah Bot</span>
+                  <span class="stat-value" id="stat-moves">0</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-label">Tile Terbesar</span>
+                  <span class="stat-value highlight" id="stat-max-tile">2</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-label">Langkah Terpilih</span>
+                  <span class="stat-value" id="stat-next-move">-</span>
+                </div>
+                <div class="stat-box">
+                  <span class="stat-label">Waktu Pikir</span>
+                  <span class="stat-value" id="stat-eval-time">0 ms</span>
+                </div>
               </div>
             </div>
+
+            <div class="bot-tips">
+              <p>💡 <strong>Info:</strong> Skor permainan yang dimainkan dengan bantuan bot akan ditandai dengan label <strong>AI Bot</strong> di Leaderboard.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Leaderboard Side View -->
+        <div id="tab-leaderboard-content" class="tab-pane">
+          <div class="panel-header">
+            <h3>🏆 Papan Peringkat</h3>
+            <button id="btn-refresh-leaderboard" class="btn-subtle" title="Segarkan Leaderboard">🔄</button>
           </div>
 
-          <div class="bot-tips">
-            <p>💡 <strong>Info:</strong> Algoritma Expectimax menggunakan pembobotan heuristik <em>Monotonicity</em>, <em>Smoothness</em>, <em>Empty Cells</em>, dan <em>Corner Locking</em> untuk mengincar 2048 atau lebih!</p>
+          <div class="panel-body">
+            <div class="leaderboard-table-container" id="side-leaderboard-list">
+              <!-- Rendered via JS -->
+            </div>
+
+            <div class="panel-leaderboard-actions">
+              <button id="btn-view-all-leaderboard" class="btn btn-secondary btn-block btn-sm">
+                🔍 Buka Layar Penuh Leaderboard
+              </button>
+            </div>
           </div>
         </div>
       </aside>
     </div>
 
+    <!-- Modal: Input Nama Pemain -->
+    <div class="modal-backdrop" id="player-modal">
+      <div class="modal-dialog">
+        <div class="modal-header-visual">
+          <div class="modal-icon-circle">🎮</div>
+          <h2 id="player-modal-title">Selamat Datang di 2048!</h2>
+          <p id="player-modal-desc">Masukkan nama Anda untuk memulai permainan dan mencatat rekor di Papan Peringkat (Leaderboard).</p>
+        </div>
+        <form id="player-name-form" class="modal-form" autocomplete="off">
+          <div class="form-group">
+            <label for="player-name-input">Nama Pemain</label>
+            <input 
+              type="text" 
+              id="player-name-input" 
+              placeholder="Contoh: Alex, Budi, Pro2048..." 
+              maxlength="16" 
+              required
+              autofocus
+            >
+            <span class="form-hint" id="player-name-hint">Panjang 2 - 16 karakter</span>
+          </div>
+          <div class="modal-form-actions">
+            <button type="button" id="btn-cancel-player-modal" class="btn btn-secondary" style="display: none;">Batal</button>
+            <button type="submit" id="btn-submit-player" class="btn btn-primary btn-block">Mulai Main 🚀</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: Pop-up Leaderboard Lengkap -->
+    <div class="modal-backdrop" id="leaderboard-modal">
+      <div class="modal-dialog modal-dialog-lg">
+        <div class="modal-header-bar">
+          <div class="modal-title-row">
+            <span class="modal-title-icon">🏆</span>
+            <h3>Papan Peringkat 2048</h3>
+          </div>
+          <button id="btn-close-leaderboard" class="modal-close-btn" title="Tutup">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <div class="leaderboard-filters">
+            <div class="leaderboard-filter-info">
+              <span>Menampilkan skor tertinggi para pemain</span>
+            </div>
+            <button id="btn-clear-leaderboard" class="btn-text-danger" title="Hapus semua rekor leaderboard">
+              🗑️ Reset Leaderboard
+            </button>
+          </div>
+
+          <div class="leaderboard-table-container modal-scroll" id="modal-leaderboard-list">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="btn-close-leaderboard-footer" class="btn btn-primary">Tutup</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
-      <p>Web Game 2048 + Auto Bot Solver | Kontrol: <strong>W/A/S/D</strong> atau <strong>Arrow Keys</strong></p>
+      <p>Web Game 2048 + Auto Bot Solver & Leaderboard | Pasang namamu di peringkat teratas!</p>
     </footer>
   </div>
 
